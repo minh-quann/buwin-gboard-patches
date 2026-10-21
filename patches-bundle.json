@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-10-21T15:45:00",
+  "description": "### ✨ Tính năng mới & Vá lỗi\n\n* **Gboard Rounded Keyboard:** Vá tận gốc ở tầng InputView & Window, chỉ bo 2 góc trên (Top-only) mặc định, loại bỏ hoàn toàn lỗi lộ màu xám trên Messenger và các ứng dụng chat.\n* **Chế độ hiển thị sạch:** Tối ưu hóa nền trong suốt/đen AMOLED hoàn toàn cho các góc bo.\n\n### ✨ New Features & Fixes\n\n* **Gboard Rounded Keyboard:** Native root InputView & Window outline clipping with default top-only rounding, completely eliminating gray corner artifacts on Messenger.\n* **Clean Window Composition:** Transparent/AMOLED backdrop composition for rounded keyboard edges.",
+  "download_url": "https://github.com/minh-quann/buwin-gboard-patches/releases/download/v3.13.0/patches-3.13.0.mpp",
+  "signature_download_url": "",
+  "version": "3.13.0"
+}
