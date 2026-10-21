@@ -393,16 +393,49 @@ val gboardAccessibilityLayoutPatch = gboardPublicResourcePatch(
 val gboardRoundedKeyboardPanelPatch = gboardPublicResourcePatch(
     featureId = "rounded_keyboard_panel",
     name = "Rounded Keyboard Panel",
-    description = "自訂鍵盤面板哪些角落呈現圓角，並分別設定上方與下方半徑。\n" +
-        "Customize which corners of the keyboard panel are rounded, and set the top and bottom radii separately.",
+    description = "Bo góc bàn phím tầng gốc (Root InputView & Window). Mặc định bo 2 góc trên, triệt tiêu hoàn toàn viền xám Messenger.\n" +
+        "Native root top-only rounding for Gboard, eliminating gray corner artifacts on Messenger.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_GBOARD)
+
+    val topRadius = stringOption(
+        key = "top_radius_dp",
+        default = "32",
+        values = linkedMapOf(
+            "16" to "16 dp (Nhỏ)",
+            "24" to "24 dp (Vừa)",
+            "28" to "28 dp (Mềm)",
+            "32" to "32 dp (Mặc định)",
+            "40" to "40 dp (Lớn)",
+            "48" to "48 dp (Rất lớn)",
+        ),
+        title = "Bán kính bo góc trên (dp) / Top Corner Radius",
+        description = "Nhập bán kính bo tròn cho 2 góc trên bàn phím (0 - 64 dp). Mặc định là 32 dp.",
+        required = true,
+    ) { value ->
+        val num = value.toIntOrNull()
+        num != null && num in 0..64
+    }
 
     dependsOn(
         gboardPatchesSettingsPatch,
         gboardRoundedKeyboardFeatureMarkerPatch,
     )
+
+    finalize {
+        val radiusValue = topRadius.value ?: "32"
+        document("AndroidManifest.xml").use { manifestDocument ->
+            val appElements = manifestDocument.getElementsByTagName("application")
+            if (appElements.length > 0) {
+                val appElement = appElements.item(0) as org.w3c.dom.Element
+                val metaData = manifestDocument.createElement("meta-data")
+                metaData.setAttribute("android:name", "buwin_rounded_keyboard_top_radius_dp")
+                metaData.setAttribute("android:value", radiusValue)
+                appElement.appendChild(metaData)
+            }
+        }
+    }
 }
 
 @Suppress("unused")

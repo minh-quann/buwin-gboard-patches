@@ -403,7 +403,7 @@
     },
     {
       "name": "Rounded Keyboard Panel",
-      "description": "自訂鍵盤面板哪些角落呈現圓角，並分別設定上方與下方半徑。\nCustomize which corners of the keyboard panel are rounded, and set the top and bottom radii separately.",
+      "description": "Bo góc bàn phím tầng gốc (Root InputView & Window). Mặc định bo 2 góc trên, triệt tiêu hoàn toàn viền xám Messenger.\nNative root top-only rounding for Gboard, eliminating gray corner artifacts on Messenger.",
       "use": true,
       "dependencies": [],
       "compatiblePackages": {
@@ -411,7 +411,24 @@
           "18.0.3.954559732-release-arm64-v8a"
         ]
       },
-      "options": []
+      "options": [
+        {
+          "key": "top_radius_dp",
+          "title": "Bán kính bo góc trên (dp) / Top corner radius",
+          "description": "Nhập bán kính bo tròn cho 2 góc trên bàn phím (0 - 64 dp). Mặc định là 32 dp.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "32",
+          "values": {
+            "16": "16 dp (Nhỏ)",
+            "24": "24 dp (Vừa)",
+            "28": "28 dp (Mềm)",
+            "32": "32 dp (Mặc định)",
+            "40": "40 dp (Lớn)",
+            "48": "48 dp (Rất lớn)"
+          }
+        }
+      ]
     },
     {
       "name": "Settings Homepage Override",

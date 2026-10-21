@@ -1,7 +1,11 @@
 package dev.jason.gboardpatches.extension.roundedkeyboard;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.drawable.ColorDrawable;
@@ -23,16 +27,45 @@ public final class GboardRoundedKeyboardRuntime {
     }
 
     /**
+     * Resolves the top corner radius configured via Morphe patch option,
+     * falling back to the default radius (32 dp).
+     */
+    public static int resolveTopRadiusDp(Context context) {
+        try {
+            if (context != null) {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo ai = pm.getApplicationInfo(
+                        context.getPackageName(), PackageManager.GET_META_DATA);
+                if (ai != null && ai.metaData != null
+                        && ai.metaData.containsKey("buwin_rounded_keyboard_top_radius_dp")) {
+                    Object val = ai.metaData.get("buwin_rounded_keyboard_top_radius_dp");
+                    if (val instanceof Integer) {
+                        return GboardRoundedKeyboardConfig.sanitizeRadiusDp((Integer) val);
+                    }
+                    if (val instanceof String) {
+                        return GboardRoundedKeyboardConfig.sanitizeRadiusDp(
+                                Integer.parseInt(((String) val).trim()));
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        GboardRoundedKeyboardConfig config = readConfigOrNull();
+        return config != null ? config.getTopRadiusDp() : GboardRoundedKeyboardConfig.DEFAULT_RADIUS_DP;
+    }
+
+    /**
      * Hook called from LatinIME onWindowShown() to clip the root InputView and Window,
      * removing unwanted gray corner artifacts in apps like Messenger.
      */
     public static void onWindowShown(Object receiver) {
         try {
-            if (!(receiver instanceof InputMethodService service)) {
+            if (!(receiver instanceof InputMethodService)) {
                 return;
             }
+            InputMethodService service = (InputMethodService) receiver;
             GboardRoundedKeyboardConfig config = readConfigOrNull();
-            if (config == null || !config.isEnabled()) {
+            if (config != null && !config.isEnabled()) {
                 return;
             }
             Dialog dialog = service.getWindow();
@@ -43,14 +76,14 @@ public final class GboardRoundedKeyboardRuntime {
             if (window == null) {
                 return;
             }
-            applyRootWindowAndInputViewRounding(window, config);
+            applyRootWindowAndInputViewRounding(window, service);
         } catch (Throwable ignored) {
             // Fail closed to prevent any IME crash
         }
     }
 
     private static void applyRootWindowAndInputViewRounding(
-            Window window, GboardRoundedKeyboardConfig config) {
+            Window window, InputMethodService service) {
         try {
             // Make Window background transparent so corners reveal app underneath instead of gray
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -69,10 +102,7 @@ public final class GboardRoundedKeyboardRuntime {
             View inputView = findInputView(decor);
             View target = inputView != null ? inputView : (inputArea != null ? inputArea : decor);
 
-            final int topRadiusDp = config.getMode() == GboardRoundedKeyboardConfig.Mode.BOTTOM
-                    ? 0 : config.getTopRadiusDp();
-            final int bottomRadiusDp = config.getMode() == GboardRoundedKeyboardConfig.Mode.TOP
-                    ? 0 : config.getBottomRadiusDp();
+            final int topRadiusDp = resolveTopRadiusDp(service);
 
             target.setOutlineProvider(new ViewOutlineProvider() {
                 @Override
@@ -84,23 +114,16 @@ public final class GboardRoundedKeyboardRuntime {
                     }
                     float density = view.getResources().getDisplayMetrics().density;
                     int topRadiusPx = Math.round(topRadiusDp * density);
-                    int bottomRadiusPx = Math.round(bottomRadiusDp * density);
 
-                    if (bottomRadiusPx == 0 && topRadiusPx > 0) {
+                    if (topRadiusPx > 0) {
                         // Top-only: Extend bottom beyond viewport so only the top two corners are rounded
                         outline.setRoundRect(0, 0, width, height + topRadiusPx, topRadiusPx);
-                    } else if (topRadiusPx == 0 && bottomRadiusPx > 0) {
-                        // Bottom-only
-                        outline.setRoundRect(0, -bottomRadiusPx, width, height, bottomRadiusPx);
-                    } else if (topRadiusPx > 0) {
-                        int radiusPx = Math.max(topRadiusPx, bottomRadiusPx);
-                        outline.setRoundRect(0, 0, width, height, radiusPx);
                     } else {
                         outline.setRect(0, 0, width, height);
                     }
                 }
             });
-            target.setClipToOutline(topRadiusDp > 0 || bottomRadiusDp > 0);
+            target.setClipToOutline(topRadiusDp > 0);
             target.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> v.invalidateOutline());
             target.invalidateOutline();
 
@@ -118,7 +141,8 @@ public final class GboardRoundedKeyboardRuntime {
                 .equals(root.getClass().getName())) {
             return root;
         }
-        if (root instanceof ViewGroup group) {
+        if (root instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) root;
             for (int i = 0; i < group.getChildCount(); i++) {
                 View found = findInputView(group.getChildAt(i));
                 if (found != null) {
@@ -135,7 +159,7 @@ public final class GboardRoundedKeyboardRuntime {
         }
         try {
             GboardRoundedKeyboardConfig config = readConfigOrNull();
-            return config != null && config.isEnabled();
+            return config == null || config.isEnabled();
         } catch (Throwable ignored) {
             return stockResult;
         }
@@ -148,13 +172,20 @@ public final class GboardRoundedKeyboardRuntime {
                 return null;
             }
             GboardRoundedKeyboardConfig config = readConfigOrNull();
-            if (config == null || !config.isEnabled()) {
+            if (config != null && !config.isEnabled()) {
                 return null;
             }
-            float top = config.getMode() == GboardRoundedKeyboardConfig.Mode.BOTTOM
-                    ? 0.0f : config.getTopRadiusDp();
-            float bottom = config.getMode() == GboardRoundedKeyboardConfig.Mode.TOP
-                    ? 0.0f : config.getBottomRadiusDp();
+            Context context = GboardFlagRuntimeContext.contextOrNull();
+            if (context != null) {
+                InputMethodService ims = unwrapInputMethodService(context);
+                if (ims != null) {
+                    onWindowShown(ims);
+                }
+            }
+            float top = (config != null && config.getMode() == GboardRoundedKeyboardConfig.Mode.BOTTOM)
+                    ? 0.0f : (float) resolveTopRadiusDp(context);
+            float bottom = (config != null && config.getMode() == GboardRoundedKeyboardConfig.Mode.TOP)
+                    ? 0.0f : (config != null ? (float) config.getBottomRadiusDp() : 0.0f);
             if (BOTTOM_OUTLINE_SELECTOR.equals(selector)) {
                 top = 0.0f;
             }
@@ -162,6 +193,17 @@ public final class GboardRoundedKeyboardRuntime {
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static InputMethodService unwrapInputMethodService(Context context) {
+        Context current = context;
+        while (current instanceof ContextWrapper) {
+            if (current instanceof InputMethodService) {
+                return (InputMethodService) current;
+            }
+            current = ((ContextWrapper) current).getBaseContext();
+        }
+        return current instanceof InputMethodService ? (InputMethodService) current : null;
     }
 
     private static GboardRoundedKeyboardConfig readConfigOrNull() {
