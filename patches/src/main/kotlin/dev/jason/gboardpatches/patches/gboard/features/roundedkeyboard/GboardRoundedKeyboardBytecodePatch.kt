@@ -222,12 +222,8 @@ private fun roundedKeyboardHelperBody(): String {
         const/4 v6, 0x1
         aget v10, p0, v6
         mul-float v10, v10, v5
-        const/4 v6, 0x2
-        aget v11, p0, v6
-        mul-float v11, v11, v5
-        const/4 v6, 0x3
-        aget v12, p0, v6
-        mul-float v12, v12, v5
+        const/4 v11, 0x0
+        const/4 v12, 0x0
         new-instance v8, $radiiType
         invoke-direct/range {v8 .. v12}, $radiiConstructor
 

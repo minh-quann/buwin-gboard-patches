@@ -14,6 +14,7 @@ import dev.jason.gboardpatches.extension.customtheme.GboardCustomThemeSettingsFe
 import dev.jason.gboardpatches.extension.frostedglass.GboardFrostedGlassSettingsFeature;
 import dev.jason.gboardpatches.extension.emojisize.GboardEmojiSizeSettingsFeature;
 import dev.jason.gboardpatches.extension.flowmode.GboardFlowModeSettingsFeature;
+import dev.jason.gboardpatches.extension.roundedkeyboard.GboardRoundedKeyboardSettingsFeature;
 import dev.jason.gboardpatches.extension.settings.GboardFeatureGroup;
 import dev.jason.gboardpatches.extension.settings.GboardPatchesSettingsContract;
 import dev.jason.gboardpatches.extension.settings.GboardSettingsText;
@@ -40,6 +41,7 @@ public final class GboardKeyboardLayoutSettingsGroupFeature
                 GboardSettingsText.get(context,
                         R.string.gboard_patches_group_keyboard_empty_summary),
                 Arrays.asList(
+                        new GboardRoundedKeyboardSettingsFeature(context),
                         new GboardSpacebarLogoSettingsFeature(context),
                         new GboardFlowModeSettingsFeature(context),
                         new GboardCloseProactiveSuggestionsSettingsFeature(context),

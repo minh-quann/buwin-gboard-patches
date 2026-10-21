@@ -167,8 +167,7 @@ public final class GboardRoundedKeyboardRuntime {
 
     public static float[] resolveEffectiveRadiiDp(String selector) {
         try {
-            if (!MAIN_PANEL_SELECTOR.equals(selector)
-                    && !BOTTOM_OUTLINE_SELECTOR.equals(selector)) {
+            if (!MAIN_PANEL_SELECTOR.equals(selector)) {
                 return null;
             }
             GboardRoundedKeyboardConfig config = readConfigOrNull();
@@ -182,14 +181,8 @@ public final class GboardRoundedKeyboardRuntime {
                     onWindowShown(ims);
                 }
             }
-            float top = (config != null && config.getMode() == GboardRoundedKeyboardConfig.Mode.BOTTOM)
-                    ? 0.0f : (float) resolveTopRadiusDp(context);
-            float bottom = (config != null && config.getMode() == GboardRoundedKeyboardConfig.Mode.TOP)
-                    ? 0.0f : (config != null ? (float) config.getBottomRadiusDp() : 0.0f);
-            if (BOTTOM_OUTLINE_SELECTOR.equals(selector)) {
-                top = 0.0f;
-            }
-            return new float[] {top, top, bottom, bottom};
+            float top = (float) resolveTopRadiusDp(context);
+            return new float[] {top, top, 0.0f, 0.0f};
         } catch (Throwable ignored) {
             return null;
         }

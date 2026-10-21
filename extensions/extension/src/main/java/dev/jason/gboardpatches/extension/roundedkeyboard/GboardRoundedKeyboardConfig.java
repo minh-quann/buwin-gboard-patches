@@ -42,14 +42,14 @@ public final class GboardRoundedKeyboardConfig {
     public GboardRoundedKeyboardConfig(
             boolean enabled, Mode mode, int topRadiusDp, int bottomRadiusDp) {
         this.enabled = enabled;
-        this.mode = mode == null ? DEFAULT_MODE : mode;
+        this.mode = DEFAULT_MODE;
         this.topRadiusDp = sanitizeRadiusDp(topRadiusDp);
-        this.bottomRadiusDp = sanitizeRadiusDp(bottomRadiusDp);
+        this.bottomRadiusDp = 0;
     }
 
     public static GboardRoundedKeyboardConfig defaults() {
         return new GboardRoundedKeyboardConfig(
-                DEFAULT_ENABLED, DEFAULT_MODE, DEFAULT_RADIUS_DP, DEFAULT_RADIUS_DP);
+                DEFAULT_ENABLED, DEFAULT_MODE, DEFAULT_RADIUS_DP, 0);
     }
 
     public boolean isEnabled() {
@@ -57,7 +57,7 @@ public final class GboardRoundedKeyboardConfig {
     }
 
     public Mode getMode() {
-        return mode;
+        return Mode.TOP;
     }
 
     public int getTopRadiusDp() {
@@ -65,7 +65,7 @@ public final class GboardRoundedKeyboardConfig {
     }
 
     public int getBottomRadiusDp() {
-        return bottomRadiusDp;
+        return 0;
     }
 
     public static int sanitizeRadiusDp(int value) {

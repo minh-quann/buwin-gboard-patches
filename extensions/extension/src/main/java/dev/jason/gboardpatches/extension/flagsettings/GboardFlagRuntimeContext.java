@@ -15,6 +15,10 @@ public final class GboardFlagRuntimeContext {
     private GboardFlagRuntimeContext() {
     }
 
+    public static Context contextOrNull() {
+        return resolveContext();
+    }
+
     public static SharedPreferences preferencesOrNull() {
         return preferencesOrNull(resolveContext());
     }

@@ -41,7 +41,7 @@ public final class GboardRoundedKeyboardRuntimeTest {
         Assert.assertTrue(snapshot.isEnabled());
         Assert.assertEquals(GboardRoundedKeyboardConfig.Mode.TOP, snapshot.getMode());
         Assert.assertEquals(32, snapshot.getTopRadiusDp());
-        Assert.assertEquals(32, snapshot.getBottomRadiusDp());
+        Assert.assertEquals(0, snapshot.getBottomRadiusDp());
         Assert.assertTrue(GboardRoundedKeyboardRuntime.applyThemeAdmission(false));
         Assert.assertArrayEquals(
                 new float[] {32.0f, 32.0f, 0.0f, 0.0f},
@@ -50,52 +50,32 @@ public final class GboardRoundedKeyboardRuntimeTest {
     }
 
     @Test
-    public void modeAndIndependentRadiiResolveForBothSelectors() {
+    public void topRadiusResolvesAndBottomIsAlwaysZero() {
         GboardRoundedKeyboardSettings.writeEnabled(preferences, true);
-        GboardRoundedKeyboardSettings.writeMode(
-                preferences, GboardRoundedKeyboardConfig.Mode.TOP);
         GboardRoundedKeyboardSettings.writeTopRadiusDp(preferences, 48);
-        GboardRoundedKeyboardSettings.writeBottomRadiusDp(preferences, 17);
 
         Assert.assertTrue(GboardRoundedKeyboardRuntime.applyThemeAdmission(false));
         Assert.assertArrayEquals(
                 new float[] {48.0f, 48.0f, 0.0f, 0.0f},
                 GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp(MAIN_SELECTOR),
                 0.0f);
-        Assert.assertArrayEquals(
-                new float[] {0.0f, 0.0f, 0.0f, 0.0f},
-                GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp(BOTTOM_SELECTOR),
-                0.0f);
-
-        GboardRoundedKeyboardSettings.writeMode(
-                preferences, GboardRoundedKeyboardConfig.Mode.BOTTOM);
-        Assert.assertArrayEquals(
-                new float[] {0.0f, 0.0f, 17.0f, 17.0f},
-                GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp(MAIN_SELECTOR),
-                0.0f);
-        Assert.assertArrayEquals(
-                new float[] {0.0f, 0.0f, 17.0f, 17.0f},
-                GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp(BOTTOM_SELECTOR),
-                0.0f);
+        Assert.assertNull(GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp(BOTTOM_SELECTOR));
         Assert.assertNull(GboardRoundedKeyboardRuntime.resolveEffectiveRadiiDp("unknown"));
     }
 
     @Test
-    public void resetPreservesEnabledAndMode() {
+    public void resetRestoresTopRadiusToThirtyTwo() {
         GboardRoundedKeyboardSettings.writeEnabled(preferences, true);
-        GboardRoundedKeyboardSettings.writeMode(
-                preferences, GboardRoundedKeyboardConfig.Mode.BOTTOM);
         GboardRoundedKeyboardSettings.writeTopRadiusDp(preferences, 12);
-        GboardRoundedKeyboardSettings.writeBottomRadiusDp(preferences, 28);
 
         Assert.assertTrue(GboardRoundedKeyboardSettings.restoreDefaultRadii(preferences));
 
         GboardRoundedKeyboardConfig snapshot =
                 GboardRoundedKeyboardSettings.readSnapshot(preferences);
         Assert.assertTrue(snapshot.isEnabled());
-        Assert.assertEquals(GboardRoundedKeyboardConfig.Mode.BOTTOM, snapshot.getMode());
+        Assert.assertEquals(GboardRoundedKeyboardConfig.Mode.TOP, snapshot.getMode());
         Assert.assertEquals(32, snapshot.getTopRadiusDp());
-        Assert.assertEquals(32, snapshot.getBottomRadiusDp());
+        Assert.assertEquals(0, snapshot.getBottomRadiusDp());
     }
 
     @Test

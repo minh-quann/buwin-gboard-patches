@@ -148,24 +148,15 @@ public final class GboardRoundedKeyboardSettingsFeature
             Runnable bottomRadiusAction,
             Runnable resetAction) {
         boolean enabled = snapshot.isEnabled();
-        GboardRoundedKeyboardConfig.Mode mode = snapshot.getMode();
         List<GboardPatchesSettingsContract.Row> rows = new ArrayList<>();
         rows.add(new GboardPatchesSettingsContract.ToggleRow(
                 enabledTitle, enabledSummary, true, enabled, toggleAction));
         rows.add(new GboardPatchesSettingsContract.SelectorRow(
-                modeTitle, modeSummary, modeLabels[mode.ordinal()], enabled, modeAction));
-        rows.add(new GboardPatchesSettingsContract.SelectorRow(
                 topRadiusTitle,
                 topRadiusSummary,
                 radiusLabel(snapshot.getTopRadiusDp()),
-                enabled && mode != GboardRoundedKeyboardConfig.Mode.BOTTOM,
+                enabled,
                 topRadiusAction));
-        rows.add(new GboardPatchesSettingsContract.SelectorRow(
-                bottomRadiusTitle,
-                bottomRadiusSummary,
-                radiusLabel(snapshot.getBottomRadiusDp()),
-                enabled && mode != GboardRoundedKeyboardConfig.Mode.TOP,
-                bottomRadiusAction));
         List<GboardPatchesSettingsContract.Row> advancedRows =
                 Collections.singletonList(new GboardPatchesSettingsContract.DangerRow(
                         resetTitle,
