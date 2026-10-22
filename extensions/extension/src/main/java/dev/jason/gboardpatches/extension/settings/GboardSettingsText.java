@@ -80,21 +80,36 @@ public final class GboardSettingsText {
         return String.format(formatLocale, template, args);
     }
 
+    private static volatile String cachedLanguageTag = null;
+
+    public static void invalidateLanguageCache() {
+        cachedLanguageTag = null;
+    }
+
     private static String resolveLanguageTag(Context context) {
+        String cached = cachedLanguageTag;
+        if (cached != null) {
+            return cached;
+        }
         Locale locale = extractLocale(context);
+        String resolvedTag;
         if (context != null) {
             try {
                 String preference = GboardSettingsLocaleManager.readLanguagePreference(
                         GboardPatchesSettings.preferences(context));
-                return GboardSettingsLocaleManager.resolveEffectiveLanguageTag(
+                resolvedTag = GboardSettingsLocaleManager.resolveEffectiveLanguageTag(
                         preference, locale);
+                cachedLanguageTag = resolvedTag;
+                return resolvedTag;
             } catch (Throwable ignored) {
                 // Static feature initialization can request stable text without a usable context.
             }
         }
-        return isTraditionalChinese(locale)
+        resolvedTag = isTraditionalChinese(locale)
                 ? LANGUAGE_TRADITIONAL_CHINESE
                 : LANGUAGE_ENGLISH;
+        cachedLanguageTag = resolvedTag;
+        return resolvedTag;
     }
 
     private static Locale extractLocale(Context context) {

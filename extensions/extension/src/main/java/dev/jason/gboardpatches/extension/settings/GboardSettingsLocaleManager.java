@@ -35,6 +35,7 @@ public final class GboardSettingsLocaleManager {
                         GboardPatchesSettings.PREF_KEY_SETTINGS_UI_LANGUAGE,
                         normalizePreferenceValue(value))
                 .apply();
+        GboardSettingsText.invalidateLanguageCache();
     }
 
     public static String resolveEffectiveLanguageTag(String preferenceValue, Locale deviceLocale) {

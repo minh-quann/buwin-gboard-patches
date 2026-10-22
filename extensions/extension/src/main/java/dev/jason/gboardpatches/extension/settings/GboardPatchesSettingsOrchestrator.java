@@ -269,7 +269,7 @@ public final class GboardPatchesSettingsOrchestrator<F, I> {
                 requestRender(effects);
                 break;
             case OPEN:
-                if (event.feature != null) {
+                if (event.feature != null && !java.util.Objects.equals(event.feature, current)) {
                     if (current == null) {
                         backStack.clear();
                     } else {

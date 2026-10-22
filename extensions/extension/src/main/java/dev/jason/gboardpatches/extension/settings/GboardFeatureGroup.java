@@ -79,9 +79,17 @@ public final class GboardFeatureGroup implements GboardPatchesSettingsContract.F
             List<GboardPatchesSettingsContract.Row> rows =
                     new ArrayList<GboardPatchesSettingsContract.Row>();
             for (GboardPatchesSettingsContract.Feature child : visibleChildren) {
+                String title = "";
+                String summary = "";
+                try {
+                    title = child.getEntryTitle();
+                    summary = child.getEntrySummary();
+                } catch (Throwable t) {
+                    Log.w(TAG, "Failed to get child title/summary: " + child.getClass().getName(), t);
+                }
                 rows.add(new GboardPatchesSettingsContract.NavigationRow(
-                        child.getEntryTitle(),
-                        child.getEntrySummary(),
+                        title != null ? title : "",
+                        summary != null ? summary : "",
                         true,
                         () -> GboardPatchesSettingsContract.openFeature(host, child)));
             }

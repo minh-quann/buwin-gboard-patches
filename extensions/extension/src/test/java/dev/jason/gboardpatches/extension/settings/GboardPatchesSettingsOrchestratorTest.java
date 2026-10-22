@@ -34,6 +34,25 @@ public final class GboardPatchesSettingsOrchestratorTest {
     }
 
     @Test
+    public void openingSameFeatureDoesNotDuplicateBackStackOrBumpGeneration() {
+        GboardPatchesSettingsOrchestrator<String, Object> orchestrator =
+                new GboardPatchesSettingsOrchestrator<String, Object>();
+
+        GboardPatchesSettingsOrchestrator.Transition<String, Object> openFirst =
+                orchestrator.accept(GboardPatchesSettingsOrchestrator.Event.open("keyboard"));
+        Assert.assertEquals("keyboard", openFirst.getState().getCurrent());
+        int firstGen = openFirst.getState().getRenderGeneration();
+
+        // Tapping the same feature again while already on it (or while rendering)
+        GboardPatchesSettingsOrchestrator.Transition<String, Object> openDuplicate =
+                orchestrator.accept(GboardPatchesSettingsOrchestrator.Event.open("keyboard"));
+        Assert.assertEquals("keyboard", openDuplicate.getState().getCurrent());
+        Assert.assertEquals(firstGen, openDuplicate.getState().getRenderGeneration());
+        Assert.assertEquals(0, openDuplicate.getState().getBackStack().size());
+        Assert.assertTrue(openDuplicate.getEffects().isEmpty());
+    }
+
+    @Test
     public void onlyLatestRenderGenerationCanBeAppliedAndPauseInvalidatesPendingWork() {
         GboardPatchesSettingsOrchestrator<String, Object> orchestrator =
                 new GboardPatchesSettingsOrchestrator<String, Object>();

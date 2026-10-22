@@ -306,6 +306,9 @@ public final class GboardPatchesSettingsActivity extends Activity
         }
         GboardPatchesSettingsOrchestrator.State<GboardPatchesSettingsContract.Feature> state =
                 settingsOrchestrator.snapshot();
+        if (feature == state.getCurrent()) {
+            return;
+        }
         scrollState.enterFeature(state.getCurrent() == null, currentScrollY());
         requestScrollPositionOnNextScreenApply(0);
         applyOrchestration(settingsOrchestrator.accept(
@@ -2406,7 +2409,8 @@ public final class GboardPatchesSettingsActivity extends Activity
     }
 
     private void buildAndApplyCurrentScreen(int buildGeneration) {
-        if (settingsOrchestrator.snapshot().isFatal()) {
+        if (!isLatestScreenBuild(buildGeneration)
+                || settingsOrchestrator.snapshot().isFatal()) {
             return;
         }
 
@@ -2416,6 +2420,9 @@ public final class GboardPatchesSettingsActivity extends Activity
         try {
             ensureFeaturesInitialized();
             if (openInitialFeatureFromIntentIfNeeded()) {
+                return;
+            }
+            if (!isLatestScreenBuild(buildGeneration)) {
                 return;
             }
             featureSnapshot = settingsOrchestrator.snapshot().getCurrent();

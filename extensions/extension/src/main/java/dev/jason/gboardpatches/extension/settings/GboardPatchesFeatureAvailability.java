@@ -89,8 +89,13 @@ public final class GboardPatchesFeatureAvailability {
             "dev.jason.gboardpatches.feature.swipe_dismiss";
 
     private static final String TAG = "GboardPatches";
+    private static volatile Bundle cachedMetaData;
 
     private GboardPatchesFeatureAvailability() {
+    }
+
+    public static void invalidateCache() {
+        cachedMetaData = null;
     }
 
     public static boolean hasFeature(Context context, String featureKey) {
@@ -111,18 +116,27 @@ public final class GboardPatchesFeatureAvailability {
         }
 
         try {
-            Context applicationContext = context.getApplicationContext();
-            Context lookupContext = applicationContext != null ? applicationContext : context;
-            PackageManager packageManager = lookupContext.getPackageManager();
-            if (packageManager == null) {
-                return false;
-            }
-            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(
-                    lookupContext.getPackageName(),
-                    PackageManager.GET_META_DATA);
-            Bundle metaData = applicationInfo.metaData;
+            Bundle metaData = cachedMetaData;
             if (metaData == null) {
-                return false;
+                synchronized (GboardPatchesFeatureAvailability.class) {
+                    metaData = cachedMetaData;
+                    if (metaData == null) {
+                        Context applicationContext = context.getApplicationContext();
+                        Context lookupContext = applicationContext != null ? applicationContext : context;
+                        PackageManager packageManager = lookupContext.getPackageManager();
+                        if (packageManager == null) {
+                            return false;
+                        }
+                        ApplicationInfo applicationInfo = packageManager.getApplicationInfo(
+                                lookupContext.getPackageName(),
+                                PackageManager.GET_META_DATA);
+                        metaData = applicationInfo.metaData;
+                        if (metaData == null) {
+                            metaData = new Bundle();
+                        }
+                        cachedMetaData = metaData;
+                    }
+                }
             }
             for (String featureKey : featureKeys) {
                 if (metaData.getBoolean(featureKey, false)) {
